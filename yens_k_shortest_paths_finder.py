@@ -2,10 +2,9 @@ import heapq
 import copy
 import networkx as nx
 import matplotlib.pyplot as plt
-import scipy.optimize
 
 
-class Graph:
+class YensGraph:
     def __init__(self):
         self.edges = {}
 
@@ -32,55 +31,48 @@ class Graph:
                         heapq.heappush(queue, (next_cost, to_node, path))
         return (float("inf"), [])
 
-    def yen(self, start, end, k):
+    def yen(self, start, end, k=3):
         original_graph = copy.deepcopy(self.edges)
         paths = []
+
+        # Pierwsze wyszukiwanie najkrótszej ścieżki
         (cost, path) = self.dijkstra(start, end)
         if cost < float("inf") and path:
             paths.append((cost, path))
 
-        for _ in range(1, k):
-            last_path = paths[-1][1]
-            for i in range(len(last_path) - 1):
-                spur_node = last_path[i]
-                root_path = last_path[: i + 1]
+        while len(paths) < k:
+            best_candidate = None
 
-                self.edges = copy.deepcopy(original_graph)
+            for path in paths:
+                for i in range(len(path[1]) - 1):
+                    spur_node = path[1][i]
+                    root_path = path[1][:i + 1]
 
-                # Remove nodes and edges
-                for p in paths:
-                    if len(p[1]) > i and root_path == p[1][: i + 1]:
-                        self.remove_edge(p[1][i], p[1][i + 1])
-                        if p[1][i + 1] != spur_node:
-                            self.remove_node(p[1][i + 1])
+                    self.edges = copy.deepcopy(original_graph)
+                    for p in paths:
+                        if p[1][:i + 1] == root_path and p[1][i] in self.edges:
+                            self.remove_edge(p[1][i], p[1][i + 1])
 
-                (spur_cost, spur_path) = self.dijkstra(spur_node, end)
-                if (
-                    spur_path
-                    and spur_path[-1] == end
-                    and spur_path not in [p[1] for p in paths]
-                ):
-                    total_cost = (
-                        sum(
-                            [
-                                self.get_edge_cost(root_path[j], root_path[j + 1])
-                                for j in range(len(root_path) - 1)
-                            ]
-                        )
-                        + spur_cost
-                    )
-                    candidate_path = root_path[:-1] + spur_path
-                    if candidate_path not in [p[1] for p in paths]:
-                        paths.append((total_cost, candidate_path))
+                    (spur_cost, spur_path) = self.dijkstra(spur_node, end)
+                    if spur_path and spur_path[-1] == end and spur_cost < float("inf"):
+                        candidate_path = root_path[:-1] + spur_path
+                        candidate_cost = sum([self.get_edge_cost(candidate_path[j], candidate_path[j + 1]) for j in range(len(candidate_path) - 1)])
+                        if candidate_path not in [p[1] for p in paths] and (best_candidate is None or candidate_cost < best_candidate[0]):
+                            best_candidate = (candidate_cost, candidate_path)
 
-                self.edges = copy.deepcopy(original_graph)
+                    self.edges = copy.deepcopy(original_graph)
 
-            if not paths or len(paths) <= 1:
+            if best_candidate:
+                paths.append(best_candidate)
+            else:
                 break
-            paths.sort(key=lambda x: x[0])
 
-        self.edges = original_graph
+        if len(paths) < k:
+            print(f"Ostrzeżenie: W algorytmie Yen's znaleziono tylko {len(paths)} różnych ścieżek, mniej niż żądana liczba {k} ścieżek.")
+
         return paths
+
+
 
     def remove_edge(self, u, v):
         self.edges[u] = [edge for edge in self.edges[u] if edge[0] != v]
@@ -129,7 +121,7 @@ def visualize_graph(graph):
 
 
 if __name__ == "__main__":
-    graph = Graph()
+    graph = YensGraph()
 
     graph.add_edge(1, 2, 2)
     graph.add_edge(1, 3, 3)
@@ -145,12 +137,13 @@ if __name__ == "__main__":
     graph.add_edge(7, 10, 4)
     graph.add_edge(8, 9, 3)
     graph.add_edge(9, 10, 2)
+    
 
     # visualize_graph(graph)
     
     start_node = 1
     end_node = 10
-    k_paths = 5
+    k_paths = 3
 
     
     shortest_paths = graph.yen(start_node, end_node, k_paths)

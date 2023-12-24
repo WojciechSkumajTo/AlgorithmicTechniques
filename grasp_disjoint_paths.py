@@ -14,6 +14,8 @@ class GRASPGraph:
         path = [start]
         current = start
         while current != end:
+            if current not in self.graph:
+                return []  # Zabezpieczenie przed brakiem węzła w grafie
             neighbors = list(self.graph.successors(current))
             if not neighbors:
                 return []  # Brak dalszej ścieżki
@@ -55,8 +57,14 @@ class GRASPGraph:
                     heapq.heappush(best_paths, (self.path_cost(path), path))
                     if len(best_paths) > k:
                         heapq.heappop(best_paths)
-        return sorted(best_paths, key=lambda x: x[0])
 
+        best_paths = sorted(best_paths, key=lambda x: x[0])
+
+        if len(best_paths) < k:
+            print(f"Ostrzeżenie: W algorytmie GRASP znaleziono tylko {len(best_paths)} różnych ścieżek, mniej niż żądana liczba {k} ścieżek.")
+        
+        return best_paths
+    
     def path_cost(self, path):
         return sum(
             self.graph[path[i]][path[i + 1]]["weight"] for i in range(len(path) - 1)
@@ -83,7 +91,7 @@ if __name__ == "__main__":
 
     start_node = 1
     end_node = 10
-    k_paths = 5
+    k_paths = 3
 
     best_paths = graph.grasp(start_node, end_node, k_paths)
     print("Best paths:", best_paths)

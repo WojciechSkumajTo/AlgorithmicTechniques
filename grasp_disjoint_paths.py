@@ -2,7 +2,6 @@ import random
 import heapq
 import networkx as nx
 
-
 class GRASPGraph:
     def __init__(self):
         self.graph = nx.DiGraph()
@@ -45,7 +44,7 @@ class GRASPGraph:
             if improved:
                 break
         return path
-
+    
     def grasp(self, start, end, k, max_iterations=100):
         best_paths = []
         for _ in range(max_iterations):

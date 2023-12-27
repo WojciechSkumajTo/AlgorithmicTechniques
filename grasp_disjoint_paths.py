@@ -1,6 +1,8 @@
 import random
 import heapq
 import networkx as nx
+import matplotlib.pyplot as plt
+
 
 class GRASPGraph:
     def __init__(self):
@@ -14,10 +16,10 @@ class GRASPGraph:
         current = start
         while current != end:
             if current not in self.graph:
-                return []  # Zabezpieczenie przed brakiem węzła w grafie
+                return []
             neighbors = list(self.graph.successors(current))
             if not neighbors:
-                return []  # Brak dalszej ścieżki
+                return []
             next_node = random.choice(neighbors)
             path.append(next_node)
             current = next_node
@@ -44,14 +46,13 @@ class GRASPGraph:
             if improved:
                 break
         return path
-    
+
     def grasp(self, start, end, k, max_iterations=100):
         best_paths = []
         for _ in range(max_iterations):
             path = self.greedy_randomized_construction(start, end)
             if path:
                 path = self.local_search(path)
-                # Dodajemy ścieżkę, jeśli nie jest identyczna z już znalezionymi
                 if path not in [p[1] for p in best_paths]:
                     heapq.heappush(best_paths, (self.path_cost(path), path))
                     if len(best_paths) > k:
@@ -60,37 +61,129 @@ class GRASPGraph:
         best_paths = sorted(best_paths, key=lambda x: x[0])
 
         if len(best_paths) < k:
-            print(f"Ostrzeżenie: W algorytmie GRASP znaleziono tylko {len(best_paths)} różnych ścieżek, mniej niż żądana liczba {k} ścieżek.")
-        
+            print(
+                f"Ostrzeżenie: W algorytmie GRASP znaleziono tylko {len(best_paths)} różnych ścieżek, mniej niż żądana liczba {k} ścieżek."
+            )
+
         return best_paths
-    
+
     def path_cost(self, path):
         return sum(
             self.graph[path[i]][path[i + 1]]["weight"] for i in range(len(path) - 1)
         )
 
 
-if __name__ == "__main__":
+def read_edges_from_file(file_path):
+    edges = []
+
+    with open(file_path, "r") as file:
+        for line in file:
+            parts = line.split()
+            if len(parts) == 3:
+                u, v, w = parts
+                edges.append((int(u), int(v), round(float(w), 2)))
+            else:
+                raise ValueError(
+                    "Each line must have exactly three values separated by spaces."
+                )
+
+    return edges
+
+
+def create_and_visualize_graph_with_paths(edges, paths_to_draw):
+    graph_dict = {}
+    for u, v, w in edges:
+        if u not in graph_dict:
+            graph_dict[u] = []
+        int_weight = int(round(w))
+        graph_dict[u].append((v, int_weight))
+
+    G = nx.DiGraph()
+
+    for node, edges in graph_dict.items():
+        G.add_node(node)
+        for edge in edges:
+            G.add_edge(node, edge[0], weight=edge[1])
+
+    pos = nx.spring_layout(G, k=0.5, iterations=20)
+
+    nx.draw_networkx_nodes(G, pos, node_size=700, node_color="lightblue", alpha=0.9)
+    nx.draw_networkx_labels(
+        G, pos, font_size=12, font_family="sans-serif", font_weight="bold"
+    )
+    nx.draw_networkx_edges(
+        G, pos, arrowstyle="->", arrowsize=15, edge_color="gray", width=1
+    )
+
+    edge_labels = {(u, v): d["weight"] for u, v, d in G.edges(data=True)}
+    nx.draw_networkx_edge_labels(
+        G, pos, edge_labels=edge_labels, font_color="green", font_size=10
+    )
+
+    for path in paths_to_draw:
+        edges_in_path = list(zip(path[:-1], path[1:]))
+        nx.draw_networkx_edges(
+            G,
+            pos,
+            edgelist=edges_in_path,
+            edge_color="red",
+            width=2.0,
+            alpha=0.7,
+            arrowstyle="->",
+            arrowsize=20,
+        )
+
+    plt.axis("off")
+    plt.tight_layout()
+
+    plt.show()
+
+
+def main(): 
     graph = GRASPGraph()
 
-    graph.add_edge(1, 2, 2)
-    graph.add_edge(1, 3, 3)
-    graph.add_edge(2, 4, 1)
-    graph.add_edge(2, 5, 4)
-    graph.add_edge(3, 5, 2)
-    graph.add_edge(3, 6, 3)
-    graph.add_edge(4, 7, 3)
-    graph.add_edge(5, 7, 2)
-    graph.add_edge(5, 8, 1)
-    graph.add_edge(6, 8, 2)
-    graph.add_edge(7, 9, 1)
-    graph.add_edge(7, 10, 4)
-    graph.add_edge(8, 9, 3)
-    graph.add_edge(9, 10, 2)
+    FILE_PATH = "/home/wojciechskumajto/AlgorithmicTechniques/example_edges.txt"
+    START_NODE = 1
+    END_NODE = 7
+    K_PATHS = 4
 
-    start_node = 1
-    end_node = 10
-    k_paths = 3
+    edges = [
+        (1, 2, 1),
+        (1, 3, 1),
+        (1, 4, 1),
+        (1, 5, 1),
+        (1, 6, 1),
+        (1, 7, 1),
+        (2, 3, 1),
+        (2, 4, 1),
+        (2, 5, 1),
+        (2, 6, 1),
+        (2, 7, 1),
+        (3, 4, 1),
+        (3, 5, 1),
+        (3, 6, 1),
+        (3, 7, 1),
+        (4, 5, 1),
+        (4, 6, 1),
+        (4, 7, 1),
+        (5, 6, 1),
+        (5, 7, 1),
+        (6, 7, 1),
+    ]
 
-    best_paths = graph.grasp(start_node, end_node, k_paths)
-    print("Best paths:", best_paths)
+    #! edges = read_edges_from_file(FILE_PATH)
+
+    for u, v, w in edges:
+        graph.add_edge(u, v, w)
+
+    shortest_paths = graph.grasp(START_NODE, END_NODE, K_PATHS)
+    
+    best_path = [shortest_paths[0][1]]
+
+    for i, path in enumerate(shortest_paths):
+        print(f"Path {i+1} ==> {path}")
+
+    create_and_visualize_graph_with_paths(edges, best_path)
+
+if __name__ == "__main__":
+    main()

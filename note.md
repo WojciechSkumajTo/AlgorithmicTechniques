@@ -10,4 +10,3 @@
     * **Yen's Algorithm Overview (algorytm Yen's)**
 3. Przygotować opis wskazanego lub zaproponowanego przez siebie algorytmu aproksymacyjnego heurystycznego 
     * **Greedy Randomized Adaptive Search Procedure (GRASP) (Zachłanna, randomizowana procedura wyszukiwania adaptacyjnego)**
-

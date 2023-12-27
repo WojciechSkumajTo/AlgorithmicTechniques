@@ -33,33 +33,6 @@ def export_graph_and_paths_to_csv(graph_edges, paths, filename):
             paths_str = "; ".join([str(path) for path in path_set])
             writer.writerow([edges_str, paths_str])
 
-# def plot_results(num_nodes_list, average_times, std_dev_times):
-#     sns.set(style='whitegrid', palette='muted')
-#     plt.figure(figsize=(14, 8))
-#     plt.gca().set_facecolor('#f0f0f0')
-
-#     plt.errorbar(num_nodes_list, average_times, yerr=std_dev_times, fmt='-o', 
-#                  color='midnightblue', ecolor='skyblue', elinewidth=3, capsize=5, 
-#                  capthick=3, markersize=10, label='GRASP Algorithm')
-#     plt.gca().get_lines()[0].set_alpha(0.7)
-
-#     plt.grid(True, which='major', linestyle='--', linewidth=0.5, alpha=0.7)
-#     plt.title('Złożoność czasowa algorytmu GRASP', fontsize=24, fontweight='bold')
-#     plt.xlabel('Liczba węzłów w grafie', fontsize=18, fontweight='bold')
-#     plt.ylabel('Średni czas wykonania (s)', fontsize=18, fontweight='bold')
-#     plt.tick_params(axis='both', which='major', labelsize=14)
-#     plt.xticks(np.arange(min(num_nodes_list), max(num_nodes_list)+1, step=10), fontsize=14)
-#     plt.yticks(fontsize=14)
-#     plt.ylim(bottom=min(average_times)-min(std_dev_times), top=max(average_times)+max(std_dev_times))
-
-#     legend = plt.legend(fontsize=14, shadow=True)
-#     frame = legend.get_frame()
-#     frame.set_color('white')
-#     frame.set_edgecolor('black')
-
-#     plt.tight_layout()
-#     plt.show()
-
 
 def plot_results(num_nodes_list, average_times, std_dev_times):
     sns.set_theme(style='whitegrid', palette='pastel')
@@ -72,7 +45,7 @@ def plot_results(num_nodes_list, average_times, std_dev_times):
     plt.grid(True, which='major', linestyle='--', linewidth=0.5) 
     
     # Title and labels with improved font sizes
-    plt.title('Złożoność czasowa algorytmu Yen\'a', fontsize=16)
+    plt.title('Złożoność czasowa algorytmu GRASP', fontsize=16)
     plt.xlabel('Liczba węzłów w grafie', fontsize=14)
     plt.ylabel('Średni czas wykonania (s)', fontsize=14)
 
@@ -87,8 +60,8 @@ def plot_results(num_nodes_list, average_times, std_dev_times):
     plt.show()
 
 def main():
-    """Main function to execute the graph analysis and export results."""
-    # Constants
+    FILE_PATH = "/home/wojciechskumajto/AlgorithmicTechniques/ShortestPathsData/grasp_graph_paths.csv"
+
     NUM_NODES_LIST = range(5, 100, 5)
     K_PATHS = 5
     ITERATIONS_PER_SIZE = 20
@@ -119,7 +92,7 @@ def main():
 
     
 
-    export_graph_and_paths_to_csv(all_graph_edges, all_paths, "grasp_graph_paths.csv")
+    export_graph_and_paths_to_csv(all_graph_edges, all_paths, FILE_PATH)
     plot_results(NUM_NODES_LIST, average_times, std_dev_times)
 
 if __name__ == "__main__":

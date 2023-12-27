@@ -21,6 +21,7 @@ def generate_deterministic_graph(num_nodes, additional_edges_per_node, weight_ra
         for j in range(i + 1, min(i + 1 + additional_edges_per_node, num_nodes + 1)):
             weight = random.uniform(*weight_range)
             edges.append((i, j, weight))
+        
     return edges
 
 def export_graph_and_paths_to_csv(graph_edges, paths, filename):
@@ -37,36 +38,32 @@ def plot_results(num_nodes_list, average_times, std_dev_times):
     sns.set_theme(style='whitegrid', palette='pastel')
     plt.figure(figsize=(12, 6))
 
-    # Create the error bar plot
     plt.errorbar(num_nodes_list, average_times, yerr=std_dev_times, fmt='-o', color='darkblue', 
                 ecolor='lightblue', elinewidth=3, capsize=5, capthick=2, markersize=8)
     
     plt.grid(True, which='major', linestyle='--', linewidth=0.5) 
     
-    # Title and labels with improved font sizes
-    plt.title('Złożoność czasowa algorytmu Yen\'a', fontsize=16)
-    plt.xlabel('Liczba węzłów w grafie', fontsize=14)
-    plt.ylabel('Średni czas wykonania (s)', fontsize=14)
+    plt.title('Złożoność czasowa algorytmu Yen\'a', fontsize=16, fontweight='bold')
+    plt.xlabel('Liczba węzłów w grafie', fontsize=14, fontweight='bold')
+    plt.ylabel('Średni czas wykonania (s)', fontsize=14, fontweight='bold')
 
-    # Customizing tick sizes
     plt.xticks(np.arange(min(num_nodes_list), max(num_nodes_list)+1, 5.0), fontsize=12)
     plt.yticks(np.arange(0, max(average_times)+0.05, 0.05), fontsize=12)
 
-    # Layout adjustments
     plt.tight_layout()
 
-    # Show the plot
     plt.show()
 
 
 def main():
-    """Main function to execute the graph analysis and export results."""
-    # Constants
-    NUM_NODES_LIST = range(5, 100, 5)
+
+    FILE_PATH = "/home/wojciechskumajto/AlgorithmicTechniques/ShortestPathsData/yen_graph_paths.csv"
+    
+    NUM_NODES_LIST = range(5, 95, 5) #! 5, 105, 5
     K_PATHS = 5
-    ITERATIONS_PER_SIZE = 20
+    ITERATIONS_PER_SIZE = 10
     ADDITIONAL_EDGES_PER_NODE = 2
-    WEIGHT_RANGE = (1, 15)
+    WEIGHT_RANGE = (1, 7)
 
     average_times = []
     std_dev_times = []
@@ -80,6 +77,7 @@ def main():
             graph_edges = generate_deterministic_graph(
                 num_nodes, ADDITIONAL_EDGES_PER_NODE, WEIGHT_RANGE
             )
+
             for u, v, w in graph_edges:
                 graph.add_edge(u, v, w)
             elapsed_time, paths = run_yen_and_measure_time(graph, 1, num_nodes, K_PATHS)
@@ -90,7 +88,7 @@ def main():
         average_times.append(np.mean(iteration_times))
         std_dev_times.append(np.std(iteration_times))
 
-    export_graph_and_paths_to_csv(all_graph_edges, all_paths, "yen_graph_paths.csv")
+    export_graph_and_paths_to_csv(all_graph_edges, all_paths, FILE_PATH)
     plot_results(NUM_NODES_LIST, average_times, std_dev_times)
 
 
